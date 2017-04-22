@@ -18,6 +18,9 @@ ACCOUNT_KEY_PATH = ENV['ACCOUNT_KEY_PATH'] || File.join(DATA_ROOT, 'account.key.
 STORE_PATH       = ENV['STORE_PATH']       || File.join(DATA_ROOT, 'store.yaml')
 TOKENS_KEY_PATH  = ENV['TOKENS_KEY_PATH']  || File.join(DATA_ROOT, 'tokens.key.pem')
 
+CHALLENGES_CACHE = ENV['CHALLENGES_CACHE'] || "threaded"
+CHALLENGES_PATH  = ENV['CHALLENGES_PATH']  || File.join(DATA_ROOT, "cache")
+
 CLIENT_SCRIPT    = File.read File.join File.dirname(__FILE__), 'freshcerts-client'
 TOKENS_EC_CURVE  = 'prime256v1'
 

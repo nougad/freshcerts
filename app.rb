@@ -8,7 +8,14 @@ require 'thread_safe'
 require 'rubygems/package'
 require './common'
 
-$challenges = ThreadSafe::Cache.new
+if !CHALLENGES_CACHE || CHALLENGES_CACHE == "threaded"
+  $challenges = ThreadSafe::Cache.new
+elsif CHALLENGES_CACHE == "filesystem"
+  require_relative "file_cache"
+  $challenges = FileCache.new(CHALLENGES_PATH)
+else
+  raise "invalid CHALLENGES_CACHE: #{CHALLENGES_CACHE}. supported values: `threaded` or `filesystem`"
+end
 
 class Freshcerts::App < Sinatra::Base
   class DomainError < StandardError
