@@ -49,6 +49,7 @@ h2:first-child { margin-top: 0.5rem; }
           <td class="status-<%= site.status.to_s.gsub(/[^a-z]/, '') %>"><%= site.status %></td>
           <td><a href="https://<%= domain %>"><%= domain %></a></td>
           <td><%= site.ports.join(', ') %></td>
+          <td><%= site.ports.map { |x| x.is_a?(Hash) ? [x[:protocol], x[:port]].join(":") : x }.join(", ") %></td>
           <td><time><%= site.last_checked %></time></td>
           <td><time><%= site.expires %></time></td>
           <td class="digest"><code><%= site.cert_sha256 %></code></td>

@@ -126,14 +126,32 @@ class Freshcerts::App < Sinatra::Base
     $challenges.delete challenge_id
   end
 
+  def parse_ports(ports)
+    unless ports
+      return {:protocol => nil, :port => 433}
+    end
+
+    ports.split(',').map do |port_and_proto|
+      proto, port = port_and_proto.split(":")
+      port, proto = proto, port if port.nil? # swap if only port is given
+
+      if proto && !%w(smtp pop3 imap ftp xmpp).include?(proto)
+        issue_error! "invalid starttls protocol parameter. Only smtp, pop3, imap, ftp and xmpp are supported"
+      end
+
+      {:protocol => proto.strip, :port => port.strip.to_i}
+    end
+  end
+
   def issue
     csr = OpenSSL::X509::Request.new params[:csr][:tempfile].read
-    ports = (params[:ports] || '443').split(',').map { |port| port.strip.to_i }
+    ports = parse_ports(params[:ports])
     certificate = Freshcerts.acme.new_certificate csr
+
     cert_hash = Freshcerts.hash_cert certificate
     logger.info "issue domains=#{domain_str} subject=#{certificate.x509.subject.to_s} sha256=#{cert_hash} expires=#{certificate.x509.not_after.to_s}"
     domains.each do |domain|
-      Freshcerts.sites[domain] = Freshcerts::Site.new ports, :fresh, Time.now, cert_hash, certificate.x509.not_after
+      Freshcerts.sites[domain] = Freshcerts::Site.new ports, :fresh, Time.now, cert_hash, certificate.x509.not_after, starttls_proto
     end
     content_type 'application/x-tar'
     stream do |out|
